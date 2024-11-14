@@ -1,0 +1,1 @@
+for /f "usebackq delims=" %i in (E:\sub-regions\osmium_commands2.txt) do %i
