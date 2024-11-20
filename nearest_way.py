@@ -1,6 +1,29 @@
 import psycopg2
 import time
 
+def fetch_speed_limit_from_db(way_id):
+    # Connect to the centralized speed limits database
+    conn = psycopg2.connect(
+        dbname="speed_limits",
+        user="postgres",
+        password="0120",
+        host="localhost",
+        port="5432"
+    )
+    cursor = conn.cursor()
+
+    # Query to find the speed limit for the given way_id
+    query = "SELECT speed_limit FROM way_speed_limits WHERE way_id = %s;"
+    cursor.execute(query, (way_id,))
+    result = cursor.fetchone()
+
+    # Close the connection
+    cursor.close()
+    conn.close()
+
+    # Return the speed limit or "Unknown" if not found
+    return result[0] if result else "Unknown"
+
 def find_nearby_states(lat, lon):
     # Connect to the central bounding box database
     conn = psycopg2.connect(
@@ -41,7 +64,7 @@ def find_nearest_way_in_state(state, lat, lon):
     )
     cursor = conn.cursor()
 
-    # Define the SQL query to find the nearest way
+    # SQL query to find the nearest way
     query = """
     SELECT osm_id, name, highway, 
            ST_Distance(ST_Transform(way, 4326), ST_SetSRID(ST_MakePoint(%s, %s), 4326)) AS distance
@@ -90,9 +113,12 @@ def find_nearest_way(lat, lon):
 
     # Display the nearest result found
     if nearest_way:
+        way_id = nearest_way[0]  # Extract way_id from the nearest way
+        speed_limit = fetch_speed_limit_from_db(way_id)  # Fetch the speed limit
         print(f"Nearest Way ID: {nearest_way[0]}")
         print(f"Name: {nearest_way[1]}")
         print(f"Highway Type: {nearest_way[2]}")
+        print(f"Speed Limit: {speed_limit}")
         print(f"Distance: {nearest_way[3]} meters")
     else:
         print("No way found near the given coordinates.")
@@ -100,6 +126,6 @@ def find_nearest_way(lat, lon):
     print(f"Total query time: {duration:.4f} seconds.")
 
 # Example usage
-latitude = 37.69647394369459
-longitude = -93.31068263311458
+latitude = 42.77197744734784
+longitude = -71.46470629821955
 find_nearest_way(latitude, longitude)
