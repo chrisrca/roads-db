@@ -10,3 +10,4 @@ sub-regions/output
 osm2pgsql-bin
 old stuff that i prob dont need
 $RECYCLE.BIN
+__pycache__/speed_limit_api.cpython-311.pyc
